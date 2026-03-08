@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HealthUp — Golden Ivory</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #0d0d0e;
+    --surface:  #141416;
+    --border:   #222226;
+    --text:     #e8e4dc;
+    --muted:    #6b6860;
+    --accent:   #c9922a;
+    --accent2:  #f0b84a;
+    --danger:   #c0392b;
+    --white:    #f5f1ea;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── LAYOUT ── */
+  #app {
+    display: flex;
+    width: 100vw; height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 36px 0 24px;
+    z-index: 10;
+  }
+
+  #logo {
+    padding: 0 28px 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  #logo .brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    letter-spacing: .18em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  #logo .product {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent2);
+    margin-top: 4px;
+  }
+
+  #chapters {
+    padding: 28px 0 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+  #chapters::-webkit-scrollbar { width: 3px; }
+  #chapters::-webkit-scrollbar-track { background: transparent; }
+  #chapters::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .chapter-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 28px;
+    cursor: pointer;
+    transition: all .2s;
+    border-left: 2px solid transparent;
+    position: relative;
+  }
+  .chapter-item:hover { background: rgba(201,146,42,.06); }
+  .chapter-item.active {
+    border-left-color: var(--accent);
+    background: rgba(201,146,42,.09);
+  }
+  .chapter-item.active .ch-label { color: var(--accent2); }
+  .chapter-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    margin-top: 6px;
+    flex-shrink: 0;
+    transition: background .2s;
+  }
+  .chapter-item.active .chapter-dot { background: var(--accent); }
+  .chapter-item.visited .chapter-dot { background: var(--muted); }
+  .ch-label {
+    font-size: 11.5px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.5;
+    transition: color .2s;
+  }
+
+  /* ── MAIN STAGE ── */
+  #stage {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 36px;
+    z-index: 5;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,13,14,.7);
+    backdrop-filter: blur(8px);
+  }
+  #slide-counter {
+    font-size: 12px;
+    letter-spacing: .12em;
+    color: var(--muted);
+    font-weight: 400;
+  }
+  #slide-counter span { color: var(--accent2); font-weight: 500; }
+
+  /* ── SLIDES ── */
+  #slides-wrapper {
+    position: absolute;
+    inset: 0;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 80px 60px 80px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .45s ease, transform .45s ease;
+    transform: translateX(40px);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateX(0);
+  }
+  .slide.exit {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* progress bar */
+  #progress {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--accent);
+    transition: width .4s ease;
+    z-index: 20;
+  }
+
+  /* ── TYPOGRAPHY UTILITIES ── */
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+  .hero-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(80px, 14vw, 160px);
+    font-weight: 900;
+    line-height: .9;
+    color: var(--accent2);
+  }
+  .hero-label {
+    font-size: clamp(14px, 1.8vw, 20px);
+    color: var(--muted);
+    letter-spacing: .08em;
+    margin-top: 16px;
+  }
+  .headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--white);
+  }
+  .headline .accent { color: var(--accent2); }
+  .subline {
+    font-size: clamp(15px, 1.6vw, 20px);
+    color: var(--muted);
+    margin-top: 18px;
+    line-height: 1.6;
+    font-weight: 300;
+    max-width: 560px;
+  }
+  .tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--accent2);
+    line-height: 1.2;
+  }
+
+  /* ── SLIDE LAYOUTS ── */
+  .layout-center {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  .layout-left {
+    flex-direction: column;
+    text-align: left;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .layout-split {
+    flex-direction: row;
+    align-items: center;
+    gap: 80px;
+  }
+  .split-left { flex: 1; }
+  .split-right { flex: 1; display: flex; justify-content: center; }
+
+  /* ── DIVIDER LINE ── */
+  .rule {
+    width: 48px; height: 2px;
+    background: var(--accent);
+    margin: 24px 0;
+  }
+  .rule.center { margin: 24px auto; }
+
+  /* ── VIAL ILLUSTRATION ── */
+  .vials-grid {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .vial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .vial-body {
+    width: 28px; height: 70px;
+    border-radius: 4px 4px 8px 8px;
+    border: 2px solid rgba(192,57,43,.6);
+    background: linear-gradient(180deg, rgba(192,57,43,.15) 0%, rgba(192,57,43,.3) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .vial-body::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60%;
+    background: rgba(192,57,43,.45);
+    border-radius: 0 0 6px 6px;
+  }
+  .vial-neck {
+    width: 14px; height: 16px;
+    border-left: 2px solid rgba(192,57,43,.6);
+    border-right: 2px solid rgba(192,57,43,.6);
+    border-top: 2px solid rgba(192,57,43,.6);
+    border-radius: 2px 2px 0 0;
+  }
+  .vial-cork {
+    width: 16px; height: 7px;
+    background: rgba(160,120,60,.6);
+    border-radius: 2px;
+  }
+  .vial.broken .vial-body {
+    border-color: rgba(192,57,43,.25);
+    background: transparent;
+    transform: rotate(35deg) translateY(10px);
+  }
+  .vial.broken .vial-body::after { height: 0; }
+  .vial.broken .vial-neck { opacity: .2; }
+  .vial.broken .vial-cork { opacity: .2; }
+  .broken-splash {
+    position: absolute;
+    bottom: -10px; right: -16px;
+    width: 40px; height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(192,57,43,.5) 0%, transparent 70%);
+  }
+
+  /* ── H-UP UNIT ── */
+  .hup-unit {
+    width: 54px; height: 54px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0d0d0e;
+    box-shadow: 0 8px 24px rgba(201,146,42,.35);
+    flex-shrink: 0;
+  }
+
+  /* ── PACK DIAGRAM ── */
+  .pack-diagram {
+    width: 240px; height: 240px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    padding: 24px;
+    position: relative;
+  }
+  .pack-diagram::before {
+    content: 'HEALTH PACK';
+    position: absolute;
+    top: -28px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .pack-slot {
+    border-radius: 10px;
+    background: rgba(201,146,42,.12);
+    border: 1px solid rgba(201,146,42,.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent2);
+    transition: all .3s;
+  }
+  .pack-slot.filled {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    color: #0d0d0e;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(201,146,42,.3);
+  }
+
+  /* ── COMPARE TABLE ── */
+  .compare-wrap {
+    display: flex;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .compare-col {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+  .compare-col.highlight {
+    border-color: var(--accent);
+    background: rgba(201,146,42,.05);
+  }
+  .compare-col h4 {
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .compare-col.highlight h4 { color: var(--accent); }
+  .compare-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-col.highlight .compare-row { color: var(--text); }
+  .icon-x { color: var(--danger); font-size: 14px; }
+  .icon-check { color: var(--accent2); font-size: 14px; }
+
+  /* ── STAT CARD ── */
+  .stat-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+  }
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .stat-card .num {
+    font-family: 'Playfair Display', serif;
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .stat-card .desc {
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* ── CYCLE DIAGRAM ── */
+  .cycle {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .cycle-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    position: relative;
+  }
+  .cycle-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 17px; bottom: 0;
+    width: 1px; height: 0;
+    background: var(--accent);
+    animation: growLine .4s ease forwards;
+    animation-delay: var(--delay, 0s);
+  }
+  @keyframes growLine {
+    from { height: 0; }
+    to   { height: 100%; }
+  }
+  .step-num {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(201,146,42,.12);
+    border: 1px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+  .step-text {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 400;
+  }
+  .step-text span { color: var(--accent2); font-weight: 500; }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  #stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: .4;
+  }
+
+  /* ── NAV ARROWS ── */
+  .nav-hint {
+    position: absolute;
+    bottom: 28px;
+    right: 36px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+  }
+  .nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all .2s;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+  /* ── SLIDE SPECIFIC BACKGROUNDS ── */
+  .slide-problem { background: radial-gradient(ellipse at 70% 50%, rgba(192,57,43,.06) 0%, transparent 60%); }
+  .slide-solution { background: radial-gradient(ellipse at 30% 50%, rgba(201,146,42,.06) 0%, transparent 60%); }
+  .slide-tagline { background: radial-gradient(ellipse at 50% 50%, rgba(201,146,42,.08) 0%, transparent 65%); }
+
+  /* ── LARGE CORNER ACCENT ── */
+  .corner-accent {
+    position: absolute;
+    top: 60px; right: 60px;
+    font-family: 'Playfair Display', serif;
+    font-size: 220px;
+    font-weight: 900;
+    color: rgba(201,146,42,.04);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 0;
+    letter-spacing: -.02em;
+  }
+  .slide-inner { position: relative; z-index: 2; width: 100%; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div id="logo">
+      <div class="brand">Golden Ivory</div>
+      <div class="product">HealthUp</div>
+    </div>
+    <div id="chapters"></div>
+  </nav>
+
+  <!-- STAGE -->
+  <main id="stage">
+    <div id="topbar">
+      <div id="slide-counter"><span id="cur">1</span> / <span id="tot">1</span></div>
+    </div>
+
+    <div id="slides-wrapper">
+
+      <!-- ───────────────────────────────
+           SLIDE 1 — THE PROBLEM (SCENE)
+      ─────────────────────────────────── -->
+      <div class="slide layout-left slide-problem" data-chapter="The Problem" data-index="0">
+        <div class="corner-accent">?</div>
+        <div class="slide-inner">
+          <div class="eyebrow">The Problem</div>
+          <h1 class="headline">Mid-battle.<br>Reach for your <span class="accent">pack.</span></h1>
+          <div class="rule"></div>
+          <p class="subline">Six glass vials. They clink. They crack. One slips — that's gold and hit points, gone.</p>
+          <div class="vials-grid" style="margin-top:36px;">
+            <div class="vial"><div class="vial-cork"></div><div class="vial-neck"></div><div class="vial-body"></div></div>
+            <div class="vial"><div class="vial-cork"></div><div class="vial-neck"></div><div class="vial-body"></div></div>
+            <div class="vial"><div class="vial-cork"></div><div class="vial-neck"></div><div class="vial-body"></div></div>
+            <div class="vial"><div class="vial-cork"></div><div class="vial-neck"></div><div class="vial-body"></div></div>
+            <div class="vial"><div class="vial-cork"></div><div class="vial-neck"></div><div class="vial-body"></div></div>
+            <div class="vial broken" style="position:relative">
+              <div class="vial-cork"></div>
+              <div class="vial-neck"></div>
+              <div class="vial-body"><div class="broken-splash"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 2 — THE PAIN POINT (STAT)
+      ─────────────────────────────────── -->
+      <div class="slide layout-center" data-chapter="The Problem" data-index="1">
+        <div class="slide-inner" style="text-align:center;">
+          <div class="eyebrow">The Reality</div>
+          <div class="hero-num">6</div>
+          <div class="hero-label">individual vials to manage — mid-combat</div>
+          <div class="rule center"></div>
+          <p class="subline" style="margin:0 auto; text-align:center;">The potion works.<br>The <em style="color:var(--accent2)">packaging</em> doesn't.</p>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 3 — INTRODUCING HEALTHUP
+      ─────────────────────────────────── -->
+      <div class="slide layout-left slide-solution" data-chapter="The Solution" data-index="2">
+        <div class="corner-accent" style="opacity:.025;">H</div>
+        <div class="slide-inner">
+          <div class="eyebrow">The Solution</div>
+          <h1 class="headline">Introducing<br><span class="accent">HealthUp.</span></h1>
+          <div class="rule"></div>
+          <p class="subline">Compact. Durable. Fits on your belt, in your bag, or strapped to your forearm.</p>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 4 — WHAT IS AN H-UP
+      ─────────────────────────────────── -->
+      <div class="slide layout-split" data-chapter="The Solution" data-index="3">
+        <div class="split-left">
+          <div class="eyebrow">The Unit</div>
+          <h2 class="headline" style="font-size:clamp(28px,4vw,52px);">One H-Up =<br><span class="accent">one Healing Word.</span></h2>
+          <div class="rule"></div>
+          <p class="subline">Soft. Bite-sized. Chewable. No glass. No cork. No fumbling. Pop it — and recover.</p>
+        </div>
+        <div class="split-right">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:16px;">
+            <div class="hup-unit" style="width:90px;height:90px;font-size:22px;border-radius:22px;">H+</div>
+            <div style="font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted);">H-Up Unit</div>
+            <div style="font-size:13px; color:var(--accent2); text-align:center; max-width:140px; line-height:1.5;">Restorative essence. Zero action wasted.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 5 — THE HEALTH PACK
+      ─────────────────────────────────── -->
+      <div class="slide layout-split" data-chapter="The Product" data-index="4">
+        <div class="split-left">
+          <div class="eyebrow">The Product</div>
+          <h2 class="headline" style="font-size:clamp(28px,4vw,52px);">6 H-Ups.<br><span class="accent">One pack.</span></h2>
+          <div class="rule"></div>
+          <p class="subline">Six emergency recoveries. Smaller than a coin purse.</p>
+          <div class="stat-row" style="margin-top:28px;">
+            <div class="stat-card"><div class="num">6</div><div class="desc">H-Ups / Pack</div></div>
+            <div class="stat-card"><div class="num" style="font-size:28px;">Belt</div><div class="desc">Ready carry</div></div>
+          </div>
+        </div>
+        <div class="split-right">
+          <div class="pack-diagram">
+            <div class="pack-slot filled">H+</div>
+            <div class="pack-slot filled">H+</div>
+            <div class="pack-slot filled">H+</div>
+            <div class="pack-slot filled">H+</div>
+            <div class="pack-slot filled">H+</div>
+            <div class="pack-slot filled">H+</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 6 — THE DIFFERENTIATOR
+      ─────────────────────────────────── -->
+      <div class="slide layout-center" data-chapter="The Differentiator" data-index="5">
+        <div class="slide-inner" style="text-align:center; max-width:680px; margin:0 auto;">
+          <div class="eyebrow">What Sets Us Apart</div>
+          <h1 class="headline" style="font-size:clamp(32px,5.5vw,72px);">The pack is<br><span class="accent">reusable.</span></h1>
+          <div class="rule center"></div>
+          <p class="subline" style="margin:0 auto; text-align:center;">You don't throw it away. You <strong style="color:var(--text)">refill it.</strong> Every town, every apothecary, every resupply.</p>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 7 — VIALS vs H-UPS
+      ─────────────────────────────────── -->
+      <div class="slide layout-left" data-chapter="The Differentiator" data-index="6">
+        <div class="slide-inner" style="max-width:720px;">
+          <div class="eyebrow">The Comparison</div>
+          <h2 class="headline" style="font-size:clamp(26px,3.5vw,46px);">Old world vs. <span class="accent">HealthUp</span></h2>
+          <div class="compare-wrap">
+            <div class="compare-col">
+              <h4>Glass Vials</h4>
+              <div class="compare-row"><span class="icon-x">✕</span> Fragile — shatters on impact</div>
+              <div class="compare-row"><span class="icon-x">✕</span> Loose & clutters inventory</div>
+              <div class="compare-row"><span class="icon-x">✕</span> Single-use disposal</div>
+              <div class="compare-row"><span class="icon-x">✕</span> Fumble with cork mid-fight</div>
+              <div class="compare-row"><span class="icon-x">✕</span> Slow action cost</div>
+            </div>
+            <div class="compare-col highlight">
+              <h4>HealthUp H-Up</h4>
+              <div class="compare-row"><span class="icon-check">✓</span> Durable soft chewable</div>
+              <div class="compare-row"><span class="icon-check">✓</span> Compact belt-clip pack</div>
+              <div class="compare-row"><span class="icon-check">✓</span> Reusable pack, bulk refill</div>
+              <div class="compare-row"><span class="icon-check">✓</span> Pop &amp; go — instant</div>
+              <div class="compare-row"><span class="icon-check">✓</span> Zero action wasted</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 8 — THE SYSTEM
+      ─────────────────────────────────── -->
+      <div class="slide layout-split" data-chapter="The System" data-index="7">
+        <div class="split-left">
+          <div class="eyebrow">The Business Model</div>
+          <h2 class="headline" style="font-size:clamp(26px,3.5vw,48px);">Not a consumable.<br><span class="accent">A system.</span></h2>
+          <div class="rule"></div>
+          <p class="subline">Loyal customers who refill — not because they have to, but because nothing else compares.</p>
+        </div>
+        <div class="split-right">
+          <div class="cycle">
+            <div class="cycle-step" style="--delay:.1s"><div class="step-num">1</div><div class="step-text">Purchase <span>Health Pack</span></div></div>
+            <div class="cycle-step" style="--delay:.3s"><div class="step-num">2</div><div class="step-text">Deploy <span>H-Ups</span> in combat</div></div>
+            <div class="cycle-step" style="--delay:.5s"><div class="step-num">3</div><div class="step-text">Restock at any <span>town / apothecary</span></div></div>
+            <div class="cycle-step" style="--delay:.7s"><div class="step-num">4</div><div class="step-text">Repeat — <span>recurring revenue</span></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 9 — THE SEEK
+      ─────────────────────────────────── -->
+      <div class="slide layout-left" data-chapter="The Ask" data-index="8">
+        <div class="corner-accent" style="font-size:180px; opacity:.03;">$</div>
+        <div class="slide-inner">
+          <div class="eyebrow">Investment Objective</div>
+          <h2 class="headline" style="font-size:clamp(28px,4vw,54px);">Scale production.<br>Expand <span class="accent">trade routes.</span></h2>
+          <div class="rule"></div>
+          <div class="stat-row">
+            <div class="stat-card"><div class="num" style="font-size:24px;">Prod.</div><div class="desc">Scale Manufacturing</div></div>
+            <div class="stat-card"><div class="num" style="font-size:24px;">Distrib.</div><div class="desc">Major Trade Routes</div></div>
+            <div class="stat-card"><div class="num" style="font-size:24px;">Partners</div><div class="desc">Apothecary Network</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ───────────────────────────────
+           SLIDE 10 — THE TAGLINE / CLOSE
+      ─────────────────────────────────── -->
+      <div class="slide layout-center slide-tagline" data-chapter="The Ask" data-index="9">
+        <div class="slide-inner" style="text-align:center;">
+          <div class="eyebrow" style="margin-bottom:32px;">Golden Ivory</div>
+          <div class="tagline">"Don't drink to survive.<br>Just <span style="color:var(--white)">HealthUp.</span>"</div>
+          <div class="rule center"></div>
+          <p class="subline" style="margin:0 auto; text-align:center; font-size:15px;">Faster. Safer. Lighter. Smarter.<br>The survival tool that works as hard as you do.</p>
+        </div>
+      </div>
+
+    </div><!-- /slides-wrapper -->
+
+    <!-- PROGRESS BAR -->
+    <div id="progress"></div>
+
+    <!-- NAV BUTTONS -->
+    <div class="nav-hint">
+      <div class="nav-btn" id="btn-prev">←</div>
+      <div class="nav-btn" id="btn-next">→</div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ── DATA ──────────────────────────────────────────
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let isAnimating = false;
+
+  // Extract unique chapters in order
+  const chapters = [];
+  const chapterSlideMap = {}; // chapter -> first slide index
+  slides.forEach((s, i) => {
+    const ch = s.dataset.chapter;
+    if (!chapters.includes(ch)) {
+      chapters.push(ch);
+      chapterSlideMap[ch] = i;
+    }
+  });
+
+  // ── BUILD SIDEBAR ─────────────────────────────────
+  const chaptersEl = document.getElementById('chapters');
+  chapters.forEach(ch => {
+    const item = document.createElement('div');
+    item.className = 'chapter-item';
+    item.dataset.chapter = ch;
+    item.innerHTML = `<div class="chapter-dot"></div><div class="ch-label">${ch}</div>`;
+    item.addEventListener('click', () => goTo(chapterSlideMap[ch]));
+    chaptersEl.appendChild(item);
+  });
+
+  // ── COUNTER & PROGRESS ────────────────────────────
+  const curEl = document.getElementById('cur');
+  const totEl = document.getElementById('tot');
+  const progressEl = document.getElementById('progress');
+  totEl.textContent = total;
+
+  function updateUI() {
+    curEl.textContent = current + 1;
+    progressEl.style.width = ((current + 1) / total * 100) + '%';
+
+    // sidebar
+    const activeChapter = slides[current].dataset.chapter;
+    document.querySelectorAll('.chapter-item').forEach(item => {
+      const ch = item.dataset.chapter;
+      item.classList.remove('active', 'visited');
+      const firstIdx = chapterSlideMap[ch];
+      if (ch === activeChapter) {
+        item.classList.add('active');
+      } else if (firstIdx < current) {
+        item.classList.add('visited');
+      }
+    });
+  }
+
+  // ── NAVIGATION ────────────────────────────────────
+  function goTo(idx) {
+    if (idx === current || isAnimating) return;
+    if (idx < 0 || idx >= total) return;
+    isAnimating = true;
+
+    slides[current].classList.add('exit');
+    slides[current].classList.remove('active');
+
+    setTimeout(() => {
+      slides[current].classList.remove('exit');
+      current = idx;
+      slides[current].classList.add('active');
+      updateUI();
+      setTimeout(() => { isAnimating = false; }, 480);
+    }, 200);
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  document.getElementById('btn-next').addEventListener('click', next);
+  document.getElementById('btn-prev').addEventListener('click', prev);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') { e.preventDefault(); prev(); }
+  });
+
+  // ── TOUCH / SWIPE ────────────────────────────────
+  let touchStartX = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+  }, { passive: true });
+
+  // ── INIT ──────────────────────────────────────────
+  slides[0].classList.add('active');
+  updateUI();
+</script>
+</body>
+</html>
