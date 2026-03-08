@@ -450,19 +450,7 @@
     padding: 14px 0;
     position: relative;
   }
-  .cycle-step:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 17px; bottom: 0;
-    width: 1px; height: 0;
-    background: var(--accent);
-    animation: growLine .4s ease forwards;
-    animation-delay: var(--delay, 0s);
-  }
-  @keyframes growLine {
-    from { height: 0; }
-    to   { height: 100%; }
-  }
+  /* connector line removed */
   .step-num {
     width: 36px; height: 36px;
     border-radius: 50%;
@@ -537,6 +525,185 @@
     letter-spacing: -.02em;
   }
   .slide-inner { position: relative; z-index: 2; width: 100%; }
+
+  /* ═══════════════════════════════════════
+     RESPONSIVE — 375px → 1440px
+  ═══════════════════════════════════════ */
+
+  /* ── Tablet & below: collapse sidebar to top bar ── */
+  @media (max-width: 768px) {
+    html, body { overflow: hidden; }
+
+    #app {
+      flex-direction: column;
+    }
+
+    /* Sidebar becomes a horizontal top strip */
+    #sidebar {
+      width: 100%;
+      min-width: unset;
+      height: auto;
+      flex-direction: row;
+      align-items: center;
+      padding: 0;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+    }
+    #sidebar::-webkit-scrollbar { display: none; }
+
+    #logo {
+      padding: 10px 16px;
+      border-bottom: none;
+      border-right: 1px solid var(--border);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    #logo .brand { font-size: 9px; }
+    #logo .product { font-size: 14px; margin-top: 2px; }
+
+    #chapters {
+      display: flex;
+      flex-direction: row;
+      padding: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex: 1;
+    }
+
+    .chapter-item {
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 14px;
+      border-left: none;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .chapter-item.active {
+      border-left-color: transparent;
+      border-bottom-color: var(--accent);
+      background: rgba(201,146,42,.09);
+    }
+    .chapter-dot { margin-top: 0; }
+    .ch-label { font-size: 9.5px; }
+
+    /* Stage fills remaining height */
+    #stage { flex: 1; min-height: 0; }
+
+    /* Slide padding reduced for small screens */
+    .slide {
+      padding: 60px 20px 50px 20px;
+      align-items: flex-start;
+      overflow-y: auto;
+    }
+
+    /* All layouts stack vertically on mobile */
+    .layout-split {
+      flex-direction: column !important;
+      gap: 28px !important;
+      align-items: flex-start !important;
+    }
+    .split-left, .split-right {
+      width: 100%;
+      flex: unset;
+    }
+    .split-right { justify-content: flex-start; }
+
+    /* Pack diagram smaller */
+    .pack-diagram {
+      width: 180px; height: 180px;
+      padding: 16px;
+      gap: 8px;
+    }
+
+    /* Compare wrap stacks */
+    .compare-wrap {
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    /* Stat row: 2-col grid on mobile */
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .stat-card { padding: 16px 12px; }
+    .stat-card .num { font-size: 28px !important; }
+
+    /* Vials grid wraps */
+    .vials-grid { flex-wrap: wrap; gap: 8px; margin-top: 20px !important; }
+
+    /* Corner accents hidden on mobile */
+    .corner-accent { display: none; }
+
+    /* Typography scale down */
+    .headline { font-size: clamp(24px, 6vw, 40px) !important; }
+    .subline   { font-size: 14px !important; margin-top: 12px; }
+    .eyebrow   { margin-bottom: 12px; }
+    .hero-num  { font-size: clamp(64px, 18vw, 100px) !important; }
+    .tagline   { font-size: clamp(22px, 6vw, 36px) !important; }
+    .rule      { margin: 16px 0; }
+
+    /* Cycle steps */
+    .cycle { gap: 0; }
+    .cycle-step { padding: 10px 0; gap: 12px; }
+    .step-num { width: 30px; height: 30px; font-size: 12px; }
+    .step-text { font-size: 13px; }
+
+    /* Nav buttons */
+    .nav-hint { bottom: 16px; right: 16px; }
+
+    /* Topbar */
+    #topbar { padding: 0 16px; }
+  }
+
+  /* ── Small mobile (375–479px): tighten further ── */
+  @media (max-width: 479px) {
+    .slide { padding: 56px 16px 46px 16px; }
+    .compare-col { padding: 16px 14px; }
+    .compare-row { font-size: 12px; gap: 7px; }
+    .stat-card .num { font-size: 22px !important; }
+    .stat-card .desc { font-size: 10px; }
+    .pack-diagram { width: 156px; height: 156px; }
+    #logo .product { font-size: 12px; }
+  }
+
+  /* ── Mid-range (769–1024px): sidebar narrower, moderate padding ── */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    #sidebar { width: 180px; min-width: 180px; padding: 24px 0 16px; }
+    #logo { padding: 0 18px 24px; }
+    #logo .product { font-size: 18px; }
+    .chapter-item { padding: 9px 18px; }
+    .slide { padding: 70px 48px 50px 48px; }
+    .layout-split { gap: 48px; }
+    .pack-diagram { width: 200px; height: 200px; }
+    .stat-card .num { font-size: 32px !important; }
+  }
+
+  /* ── Large desktop (1280px+): max-width content cap ── */
+  @media (min-width: 1280px) {
+    .slide { padding: 80px 100px 60px 100px; }
+    .layout-split { gap: 100px; }
+    .pack-diagram { width: 260px; height: 260px; }
+  }
+
+  /* ── Stat row: 4 columns on desktop (≥769px) ── */
+  @media (min-width: 769px) {
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    /* If fewer than 4 cards, let them fill evenly */
+    .stat-row .stat-card:only-child { grid-column: 1 / -1; }
+  }
 </style>
 </head>
 <body>
