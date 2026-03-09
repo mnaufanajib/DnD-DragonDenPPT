@@ -55,3 +55,12 @@ All code is contained within `index.html` for simplicity.
 ## Deployment
 
 Simply host the `index.html` file on any web server or open it directly in a browser. No build process required.
+
+## Changelog
+
+### [Unreleased]
+- TBD
+
+<!-- Add new entries here in reverse chronological order -->
+<!-- Format: ### [Version] - YYYY-MM-DD -->
+<!--        - Change description -->

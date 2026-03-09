@@ -48,6 +48,12 @@ The entire application is contained in a single HTML file (`index.html`) with th
 - Follow existing patterns for consistency
 - Update JavaScript if adding complex interactions
 
+### Git Workflow
+- Always use clean, descriptive commit messages that explain the "why" behind changes
+- Follow the existing commit message style in the repository
+- Update the Changelog section in README.md with notable changes
+- Keep commits focused on single, cohesive changes when possible
+
 ## Architecture Patterns
 
 1. **Component-Based CSS** - Reusable utility classes for consistent styling
